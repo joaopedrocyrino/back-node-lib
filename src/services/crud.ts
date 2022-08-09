@@ -14,7 +14,8 @@ class CRUDservices extends Services {
       r?: string[]
       u?: string[]
       d?: string[]
-    }
+    },
+    endpoints?: service.endpointType[]
   ) {
     super(
       validator,
@@ -67,7 +68,8 @@ class CRUDservices extends Services {
 
             return req.id
           }
-        }
+        },
+        ...endpoints ?? []
       ]
     )
   }
