@@ -14,8 +14,16 @@ class CRUDquery {
         selectFields?: string[],
         uniqueFields?: Array<string | string[]>
     ) {
-        this.selectFields = selectFields ?? ['*']
-        this.uniqueFields = uniqueFields ?? []
+        this.selectFields = selectFields
+            ? [
+                ...selectFields,
+                'id',
+                'created_at',
+                'updated_at',
+                'is_deleted'
+            ]
+            : ['*']
+        this.uniqueFields = uniqueFields ?? ['id']
     }
 
     async getOne<T>(fields: Partial<T | baseFields>): Promise<T> {
