@@ -1,4 +1,4 @@
-import { createBase } from '../entities/utils'
+import { utils } from '../entities'
 import { CRUDvalidator } from '../validator'
 import { CRUDquery } from '../database'
 import Services from './services'
@@ -7,6 +7,7 @@ import { service } from '../dto'
 class CRUDservices extends Services {
   constructor(
     private readonly query: CRUDquery,
+    private readonly entity: any,
     protected readonly fullAccess: string[],
     validator: CRUDvalidator,
     crudAccess: {
@@ -24,7 +25,7 @@ class CRUDservices extends Services {
           key: 'create',
           scope: [...crudAccess.c ?? [], ...fullAccess],
           call: async (req: service.request) => {
-            const base = createBase()
+            const base = utils.createBase()
 
             await this.query.create({ ...base, ...req })
         
@@ -37,7 +38,7 @@ class CRUDservices extends Services {
           call: async (req: service.request) => {
             const record = await this.query.getOne(req)
 
-            return record
+            return new this.entity(record)
           }
         },
         {
@@ -46,7 +47,7 @@ class CRUDservices extends Services {
           call: async (req: service.request) => {
             const records = await this.query.getMany(req)
 
-            return records
+            return records.map(r => new this.entity(r))
           }
         },
         {
