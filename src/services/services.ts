@@ -33,7 +33,7 @@ class Services {
     this.endpoints = requestEndpoints
   }
 
-  async request(key: string, req: { [k: string]: any }): Promise<service.response> {
+  async request<T>(key: string, req: T): Promise<service.response> {
     try {
       return await this.endpoints[key](req)
     } catch (e) {

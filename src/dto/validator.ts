@@ -1,4 +1,4 @@
-export type fieldType = 'string' | 'guid' | 'bool' | 'number' | 'timestamp' | 'custom' | 'array'
+export type fieldType = 'string' | 'guid' | 'bool' | 'number' | 'timestamp' | 'custom' | 'array' | 'email'
 
 export interface fieldOpts {
     required?: boolean

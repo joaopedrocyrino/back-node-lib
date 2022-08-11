@@ -79,6 +79,10 @@ class Validator {
 
                 break
 
+            case 'email':
+                fieldSchema = Joi.string().email()
+                break
+
             case 'array':
                 const items = opts?.items
 
