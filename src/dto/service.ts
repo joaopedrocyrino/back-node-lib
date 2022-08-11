@@ -6,13 +6,22 @@ export interface response {
     data?: any
 }
 
-export type request = { [k:string]: any }
+export type request = { [k: string]: any }
 
-export interface endpointType {
-    key: string
-    scope?: string[]
-    validatorKey?: string
-    call: (req: request) => Promise<any>
+export type gatewayProps = [
+    {
+        req: request
+        scope?: string[]
+        validatorKey?: string
+    },
+    (body: request) => Promise<any>
+]
+
+export type access = string[]
+
+export interface crudAccess {
+    c?: access
+    r?: access
+    u?: access
+    d?: access
 }
-
-export type endpointsType = { [k: string]: (req: request) => Promise<response> }

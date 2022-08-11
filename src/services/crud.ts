@@ -1,78 +1,106 @@
-import { utils } from '../entities'
 import { CRUDvalidator } from '../validator'
 import { CRUDquery } from '../database'
+import { utils } from '../entities'
 import Services from './services'
 import { service } from '../dto'
 
 class CRUDservices extends Services {
+  private readonly access: service.crudAccess
+
   constructor(
-    private readonly query: CRUDquery,
     private readonly entity: any,
-    protected readonly fullAccess: string[],
+    private readonly query: CRUDquery,
     validator: CRUDvalidator,
-    crudAccess: {
-      c?: string[]
-      r?: string[]
-      u?: string[]
-      d?: string[]
-    },
-    endpoints?: service.endpointType[]
+    fullAccess: service.access,
+    crudAccess: service.crudAccess
   ) {
-    super(
-      validator,
-      [
-        {
-          key: 'create',
-          scope: [...crudAccess.c ?? [], ...fullAccess],
-          call: async (req: service.request) => {
-            const base = utils.createBase()
+    super(validator)
 
-            await this.query.create({ ...base, ...req })
-        
-            return base.id
-          }
-        },
-        {
-          key: 'getOne',
-          scope: [...crudAccess.r ?? [], ...fullAccess, 'self'],
-          call: async (req: service.request) => {
-            const record = await this.query.getOne(req)
+    this.access = {
+      c: [...fullAccess, ...crudAccess.c ?? []],
+      r: [...fullAccess, ...crudAccess.r ?? []],
+      u: [...fullAccess, ...crudAccess.u ?? []],
+      d: [...fullAccess, ...crudAccess.d ?? []],
+    }
+  }
 
-            return new this.entity(record)
-          }
-        },
-        {
-          key: 'getMany',
-          scope: [...crudAccess.r ?? [], ...fullAccess],
-          call: async (req: service.request) => {
-            const records = await this.query.getMany(req)
+  async create(req: service.request): Promise<service.response> {
+    return await this.gateway([
+      {
+        req,
+        scope: this.access.c,
+        validatorKey: 'create'
+      },
+      async (body: service.request): Promise<string> => {
+        const base = utils.createBase()
 
-            return records.map(r => new this.entity(r))
-          }
-        },
-        {
-          key: 'update',
-          scope: [...crudAccess.u ?? [], ...fullAccess],
-          call: async (req: service.request) => {
-            const { id, ...fields } = req
+        await this.query.create({ ...base, ...body })
 
-            await this.query.update(id, fields)
-        
-            return id
-          }
-        },
-        {
-          key: 'delete',
-          scope: [...crudAccess.d ?? [], ...fullAccess],
-          call: async (req: service.request) => {
-            await this.query.delete(req.id)
+        return base.id
+      }
+    ])
+  }
 
-            return req.id
-          }
-        },
-        ...endpoints ?? []
-      ]
-    )
+  async getOne(req: service.request): Promise<service.response> {
+    return await this.gateway([
+      {
+        req,
+        scope: this.access.r,
+        validatorKey: 'getOne'
+      },
+      async (body: service.request): Promise<any> => {
+        const record = await this.query.getOne(body)
+
+        return new this.entity(record)
+      }
+    ])
+  }
+
+  async getMany(req: service.request): Promise<service.response> {
+    return await this.gateway([
+      {
+        req,
+        scope: this.access.r,
+        validatorKey: 'getMany'
+      },
+      async (body: service.request): Promise<any[]> => {
+        const records = await this.query.getMany(body)
+
+        return records.map(r => new this.entity(r))
+      }
+    ])
+  }
+
+  async update(req: service.request): Promise<service.response> {
+    return await this.gateway([
+      {
+        req,
+        scope: this.access.u,
+        validatorKey: 'update'
+      },
+      async (body: service.request): Promise<string> => {
+        const { id, ...fields } = body
+
+        await this.query.update(id, fields)
+
+        return id
+      }
+    ])
+  }
+
+  async delete(req: service.request): Promise<service.response> {
+    return await this.gateway([
+      {
+        req,
+        scope: this.access.d,
+        validatorKey: 'delete'
+      },
+      async (body: service.request): Promise<string> => {
+        await this.query.delete(body.id)
+
+        return body.id
+      }
+    ])
   }
 };
 

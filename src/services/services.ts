@@ -3,39 +3,24 @@ import { BaseError } from '../error'
 import { Validator } from '../validator'
 
 class Services {
-  private readonly endpoints: service.endpointsType
+  constructor(private readonly validator: Validator) { }
 
-  constructor(
-    private readonly validator: Validator,
-    endpoints: Array<service.endpointType>
-  ) {
-    const requestEndpoints: service.endpointsType = {}
-
-    endpoints.forEach(record => {
-      requestEndpoints[record.key] = async (req: { [k: string]: any }): Promise<service.response> => {
-        const { token, ...body } = req
-
-        if (record.scope) {
-
-        }
-
-        this.validator.validate(
-          record.validatorKey ?? record.key,
-          body
-        )
-
-        const data = await record.call(body)
-
-        return { data }
-      }
-    })
-
-    this.endpoints = requestEndpoints
-  }
-
-  async request<T>(key: string, req: T): Promise<service.response> {
+  async gateway(props: service.gatewayProps): Promise<service.response> {
     try {
-      return await this.endpoints[key](req)
+      const { token, ...body } = props[0].req
+
+      if (props[0].scope) {
+
+      }
+
+      this.validator.validate(
+        props[0].validatorKey ?? 'none',
+        body
+      )
+
+      const data = await props[1](body)
+
+      return { data }
     } catch (e) {
       return e instanceof BaseError
         ? {
