@@ -3,7 +3,7 @@ import Validator from './validator'
 
 class CRUDvalidator extends Validator {
   constructor(
-    crud: { base: schemaType, omit?: string[] },
+    crud: [schemaType, string[]] | [schemaType],
     others?: { [k: string]: schema }
   ) {
     const id: fieldType = 'guid'
@@ -14,17 +14,17 @@ class CRUDvalidator extends Validator {
     const create: schemaType = {}
     const update: schemaType = {}
 
-    Object.keys(crud.base).forEach(k => {
-      create[k] = crud.base[k]
+    Object.keys(crud[0]).forEach(k => {
+      create[k] = crud[0][k]
 
-      if (!crud.omit?.includes(k)) {
-        const op = crud.base[k][1]
+      if (!crud[1]?.includes(k)) {
+        const op = crud[0][k][1]
 
         if (op) {
           const { required, ...rest } = op
 
-          update[k] = [crud.base[k][0], rest]
-        } else { update[k] = [crud.base[k][0]] }
+          update[k] = [crud[0][k][0], rest]
+        } else { update[k] = [crud[0][k][0]] }
       }
     })
 
