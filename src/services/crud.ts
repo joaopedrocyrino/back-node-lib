@@ -9,7 +9,7 @@ class CRUDservices extends Services {
 
   constructor(
     private readonly entity: any,
-    private readonly query: CRUDquery,
+    protected readonly query: CRUDquery,
     validator: CRUDvalidator,
     fullAccess: service.access,
     crudAccess: service.crudAccess
